@@ -10,3 +10,8 @@ jobs:
         uses: cedrickring/golang-action@1.6.0
         with:
           args: make build
+      - name: upload-artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: test
+          path: bin/test
