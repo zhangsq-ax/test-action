@@ -1,25 +1,38 @@
+name: Build And Deploy
 on:
   push:
     branches: [main]
-name: Build
 jobs:
-  main:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout Code
+        uses: actions/checkout@master
 
-      - name: build
+      - name: Build
         uses: cedrickring/golang-action@1.6.0
         with:
           args: make build
 
-      - name: build docker
+      - name: Build Docker
         run: |
           docker login --username=${{ secrets.ALIYUN_USERNAME }} --password=${{ secrets.ALIYUN_PASSWORD }} ${{ secrets.ALIYUN_REGISTRY }}
           docker build -t ${{ secrets.ALIYUN_REGISTRY }}:$GITHUB_RUN_NUMBER .
           docker push ${{ secrets.ALIYUN_REGISTRY }}:$GITHUB_RUN_NUMBER
           docker tag $(docker images ${{ secrets.ALIYUN_REGISTRY }}:$GITHUB_RUN_NUMBER -q) ${{ secrets.ALIYUN_REGISTRY }}:latest
           docker push ${{ secrets.ALIYUN_REGISTRY }}:latest
+
+      - name: Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            docker login --username=${{ secrets.ALIYUN_USERNAME }} --password=${{ secrets.ALIYUN_PASSWORD }} ${{ secrets.ALIYUN_REGISTRY }}
+            docker pull ${{ secrets.ALIYUN_REGISTRY}}:latest
+            docker run -d --name=test_action --restart=always --network=middleware_extnetwork ${{ secrets.ALIYUN_REGISTRY }}:latest
 
 #      - name: Set up QEMU
 #        uses: docker/setup-qemu-action@v1
