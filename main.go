@@ -13,7 +13,7 @@ func main() {
 }
 
 func index(req http.ResponseWriter, res *http.Request) {
-	_, err := req.Write([]byte("Hello"))
+	_, err := req.Write([]byte("Hello World!"))
 	if err != nil {
 		log.Println(err)
 	}
