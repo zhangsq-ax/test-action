@@ -1,7 +1,9 @@
 name: Build And Deploy
 on:
   push:
-    branches: [main]
+    #branches: [main]
+    tags:
+      - v*
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -17,9 +19,12 @@ jobs:
       - name: Build Docker
         run: |
           docker login --username=${{ secrets.ALIYUN_USERNAME }} --password=${{ secrets.ALIYUN_PASSWORD }} ${{ secrets.ALIYUN_REGISTRY }}
-          docker build -t ${{ secrets.ALIYUN_REGISTRY }}:$GITHUB_RUN_NUMBER .
-          docker push ${{ secrets.ALIYUN_REGISTRY }}:$GITHUB_RUN_NUMBER
-          docker tag $(docker images ${{ secrets.ALIYUN_REGISTRY }}:$GITHUB_RUN_NUMBER -q) ${{ secrets.ALIYUN_REGISTRY }}:latest
+          # docker build -t ${{ secrets.ALIYUN_REGISTRY }}:$GITHUB_RUN_NUMBER .
+          docker build -t ${{ secrets.ALIYUN_REGISTRY }}:${GITHUB_REF/refs\/tags\//} .
+          # docker push ${{ secrets.ALIYUN_REGISTRY }}:$GITHUB_RUN_NUMBER
+          docker push ${{ secrets.ALIYUN_REGISTRY }}:${GITHUB_REF/refs\/tags\//}
+          # docker tag $(docker images ${{ secrets.ALIYUN_REGISTRY }}:$GITHUB_RUN_NUMBER -q) ${{ secrets.ALIYUN_REGISTRY }}:latest
+          docker tag $(docker images ${{ secrets.ALIYUN_REGISTRY }}:${GITHUB_REF/refs\/tags\//} -q) ${{ secrets.ALIYUN_REGISTRY }}:latest
           docker push ${{ secrets.ALIYUN_REGISTRY }}:latest
 
       - name: Deploy
@@ -32,6 +37,7 @@ jobs:
           script: |
             docker login --username=${{ secrets.ALIYUN_USERNAME }} --password=${{ secrets.ALIYUN_PASSWORD }} ${{ secrets.ALIYUN_REGISTRY }}
             docker pull ${{ secrets.ALIYUN_REGISTRY}}:latest
+            docker rm test_action
             docker run -d --name=test_action --restart=always --network=middleware_extnetwork ${{ secrets.ALIYUN_REGISTRY }}:latest
 
 #      - name: Set up QEMU
