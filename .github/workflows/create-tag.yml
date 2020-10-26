@@ -4,6 +4,7 @@ on:
 
 jobs:
   create_tag:
+    runs-on: ubuntu-latest
     steps:
       - uses: go-semantic-release/action@v1
         with:
