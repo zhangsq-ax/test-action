@@ -15,7 +15,11 @@ func main() {
 }
 
 func index(res http.ResponseWriter, req *http.Request) {
-	_, err := fmt.Fprintf(res,"Hello, %s", path.Base(req.URL.Path))
+	name := path.Base(req.URL.Path)
+	if name == "/" {
+		name = "world"
+	}
+	_, err := fmt.Fprintf(res,"Hello, %s!", name)
 	if err != nil {
 		log.Println(err)
 	}
