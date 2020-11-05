@@ -1,6 +1,7 @@
 name: Create Tag
 on:
   workflow_dispatch:
+    branches: [ main ]
 
 jobs:
   create_tag:
