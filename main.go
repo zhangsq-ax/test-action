@@ -14,6 +14,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
+
 func index(res http.ResponseWriter, req *http.Request) {
 	name := path.Base(req.URL.Path)
 	if name == "/" {
